@@ -16,8 +16,7 @@ class BingSearch(BaseTool):
             bing_search_url=bing_search_url,
             bing_subscription_key=bing_subscription_key,
         )
-        output = search.run(search_query)
-        return output
+        return search.run(search_query)
 
     async def _arun(self, search_query: str) -> str:
         bing_search_url = self.metadata["bingSearchUrl"]
@@ -27,5 +26,4 @@ class BingSearch(BaseTool):
             bing_subscription_key=bing_subscription_key,
         )
         loop = asyncio.get_event_loop()
-        output = await loop.run_in_executor(None, search.run, search_query)
-        return output
+        return await loop.run_in_executor(None, search.run, search_query)

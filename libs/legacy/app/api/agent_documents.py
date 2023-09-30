@@ -17,15 +17,11 @@ router = APIRouter()
 
 def parse_filter_params(request: Request):
     query_params = request.query_params
-    filter_params = {}
-
-    for k, v in query_params.items():
-        if k.startswith("filter[") and k.endswith("]"):
-            # Removing 'filter[' from start and ']' from end
-            filter_key = k[7:-1]
-            filter_params[filter_key] = v
-
-    return filter_params
+    return {
+        k[7:-1]: v
+        for k, v in query_params.items()
+        if k.startswith("filter[") and k.endswith("]")
+    }
 
 
 @router.post(

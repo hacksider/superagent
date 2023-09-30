@@ -75,13 +75,12 @@ class DatasourceTool(BaseTool):
     ) -> str:
         """Use the tool."""
         pinecone = PineconeVectorStore()
-        result = pinecone.query_documents(
+        return pinecone.query_documents(
             prompt=question,
             datasource_id=self.metadata["datasource_id"],
             query_type=self.metadata["query_type"],
             top_k=3,
         )
-        return result
 
     async def _arun(
         self,
@@ -89,13 +88,12 @@ class DatasourceTool(BaseTool):
     ) -> str:
         """Use the tool asynchronously."""
         pinecone = PineconeVectorStore()
-        result = pinecone.query_documents(
+        return pinecone.query_documents(
             prompt=question,
             datasource_id=self.metadata["datasource_id"],
             query_type=self.metadata["query_type"],
             top_k=3,
         )
-        return result
 
 
 class StructuredDatasourceTool(BaseTool):
@@ -114,8 +112,7 @@ class StructuredDatasourceTool(BaseTool):
     def _load_csv_data(self, url):
         response = requests.get(url)
         file_content = StringIO(response.text)
-        df = pd.read_csv(file_content)
-        return df
+        return pd.read_csv(file_content)
 
     def _run(
         self,
@@ -140,8 +137,7 @@ class StructuredDatasourceTool(BaseTool):
             verbose=True,
             agent_type=AgentType.OPENAI_FUNCTIONS,
         )
-        output = agent.run(question)
-        return output
+        return agent.run(question)
 
     async def _arun(
         self,
@@ -166,5 +162,4 @@ class StructuredDatasourceTool(BaseTool):
             verbose=True,
             agent_type=AgentType.OPENAI_FUNCTIONS,
         )
-        output = await agent.arun(question)
-        return output
+        return await agent.arun(question)

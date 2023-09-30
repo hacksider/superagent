@@ -85,8 +85,7 @@ class PineconeVectorStore:
         def batch_generator(chunks, batch_size):
             for i in range(0, len(chunks), batch_size):
                 i_end = min(len(chunks), i + batch_size)
-                batch = chunks[i:i_end]
-                yield batch
+                yield chunks[i:i_end]
 
         batch_gen = batch_generator(chunks, batch_size)
 
@@ -127,12 +126,10 @@ class PineconeVectorStore:
             *[self._extract_match_data(match) for match in response["matches"]]
         )
 
-        responses = [
+        return [
             Response(id=id, text=text, metadata=meta)
             for id, text, meta in zip(ids, texts, metadata)
         ]
-
-        return responses
 
     def query(
         self,
@@ -164,8 +161,7 @@ class PineconeVectorStore:
                 if match["score"] >= min_score
             ]
 
-        formatted_responses = self._format_response(raw_responses)
-        return formatted_responses
+        return self._format_response(raw_responses)
 
     def query_documents(
         self,
@@ -215,20 +211,20 @@ class PineconeVectorStore:
                 include_values=False,
             )
 
-            vector_ids = [match["id"] for match in documents_in_namespace["matches"]]
+            if vector_ids := [
+                match["id"] for match in documents_in_namespace["matches"]
+            ]:
+                logger.info(
+                    f"Deleting {len(vector_ids)} documents in namespace {document_id}"
+                )
+                self.index.delete(ids=vector_ids, delete_all=False)
 
-            if len(vector_ids) == 0:
+            else:
                 logger.info(
                     f"No vectors found in namespace `{document_id}`. "
                     f"Deleting `{document_id}` using default namespace."
                 )
                 self.index.delete(filter={"document_id": document_id}, delete_all=False)
-
-            else:
-                logger.info(
-                    f"Deleting {len(vector_ids)} documents in namespace {document_id}"
-                )
-                self.index.delete(ids=vector_ids, delete_all=False)
 
         except Exception as e:
             logger.error(f"Failed to delete {document_id}. Error: {e}")

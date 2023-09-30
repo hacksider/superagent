@@ -32,18 +32,14 @@ class ToolDescription(Enum):
 
 
 def get_search_tool() -> Any:
-    search = BingSearchAPIWrapper(
+    return BingSearchAPIWrapper(
         bing_search_url=config("BING_SEARCH_URL"),
         bing_subscription_key=config("BING_SUBSCRIPTION_KEY"),
     )
 
-    return search
-
 
 def get_wolfram_alpha_tool() -> Any:
-    wolfram = WolframAlphaAPIWrapper()
-
-    return wolfram
+    return WolframAlphaAPIWrapper()
 
 
 def get_replicate_tool(metadata: dict) -> Any:
@@ -62,14 +58,12 @@ def get_replicate_tool(metadata: dict) -> Any:
 def get_zapier_nla_tool(metadata: dict, llm: Any) -> Any:
     zapier = ZapierNLAWrapper(zapier_nla_api_key=metadata["zapier_nla_api_key"])
     toolkit = ZapierToolkit.from_zapier_nla_wrapper(zapier)
-    agent = initialize_agent(
+    return initialize_agent(
         toolkit.get_tools(),
         llm,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         verbose=True,
     )
-
-    return agent
 
 
 def get_chatgpt_plugin_tool(metadata: dict) -> Any:
@@ -83,11 +77,9 @@ def get_chatgpt_plugin_tool(metadata: dict) -> Any:
 def get_openapi_tool(metadata: dict) -> Any:
     openapi_url = metadata.get("openApiUrl")
     headers = metadata.get("headers")
-    agent = get_openapi_chain(
+    return get_openapi_chain(
         spec=openapi_url, headers=json.loads(headers) if headers else None
     )
-
-    return agent
 
 
 class AgentTool:
@@ -144,12 +136,10 @@ class DocSummarizerTool:
 
         documents = [Document(page_content=text) for text in document_text]
         chain = load_summarize_chain(self.llm, chain_type="stuff")
-        summary = chain.run(
+        return chain.run(
             input_documents=documents,
             question="Write a concise summary within 200 words.",
         )
-
-        return summary
 
 
 class DocumentTool:
@@ -159,7 +149,7 @@ class DocumentTool:
 
     def run(self, prompt: str) -> str:
         """Use the tool."""
-        results = (
+        return (
             VectorStoreBase()
             .get_database()
             .query_documents(
@@ -169,5 +159,3 @@ class DocumentTool:
                 top_k=3,
             )
         )
-
-        return results

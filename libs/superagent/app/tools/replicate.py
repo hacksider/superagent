@@ -14,8 +14,7 @@ class Replicate(BaseTool):
         model = ReplicateModel(
             model=model, input=input, api_token=api_token, replicate_api_token=api_token
         )
-        output = model.predict(prompt)
-        return output
+        return model.predict(prompt)
 
     async def _arun(self, prompt: str) -> str:
         model = self.metadata["model"]
@@ -24,5 +23,4 @@ class Replicate(BaseTool):
         model = ReplicateModel(
             model=model, input=input, api_token=api_token, replicate_api_token=api_token
         )
-        output = await model.apredict(prompt)
-        return output
+        return await model.apredict(prompt)

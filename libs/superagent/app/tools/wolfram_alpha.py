@@ -18,5 +18,4 @@ class WolframAlpha(BaseTool):
         app_id = self.metadata["appId"]
         wolfram = WolframAlphaAPIWrapper(wolfram_alpha_appid=app_id)
         loop = asyncio.get_event_loop()
-        output = await loop.run_in_executor(None, wolfram.run, input)
-        return output
+        return await loop.run_in_executor(None, wolfram.run, input)

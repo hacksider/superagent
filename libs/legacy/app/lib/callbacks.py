@@ -45,10 +45,9 @@ class StreamingCallbackHandler(BaseCallbackHandler):
                 if self.agent_type == "OPENAI":
                     if gen.message.content != "":
                         self.on_llm_end_()
-                else:
-                    if "Final Answer" in gen.message.content:
-                        self.seen_final_answer[0] = False
-                        self.on_llm_end_()
+                elif "Final Answer" in gen.message.content:
+                    self.seen_final_answer[0] = False
+                    self.on_llm_end_()
 
     def on_llm_error(
         self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any

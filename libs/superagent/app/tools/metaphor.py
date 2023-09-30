@@ -11,12 +11,10 @@ class MetaphorSearch(BaseTool):
         search = MetaphorSearchAPIWrapper(
             metaphor_api_key=self.metadata["metaphorApiKey"]
         )
-        output = search.results(search_query, 10, use_autoprompt=True)
-        return output
+        return search.results(search_query, 10, use_autoprompt=True)
 
     async def _arun(self, search_query: str) -> str:
         search = MetaphorSearchAPIWrapper(
             metaphor_api_key=self.metadata["metaphorApiKey"]
         )
-        output = await search.results_async(search_query, 10, use_autoprompt=True)
-        return output
+        return await search.results_async(search_query, 10, use_autoprompt=True)

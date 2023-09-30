@@ -80,58 +80,6 @@ def load_documents(type, metadata, url, content, from_page, to_page):
             loader = RemoteDepthReader(depth=depth)
             return loader.load_langchain_documents(url=url)
 
-        if type == "TXT":
-            file_response = content
-            if content is None:
-                if url is None:
-                    raise ValueError("URL must not be None when content is None.")
-                file_response = requests.get(url).text
-
-            if file_response is not None:
-                with NamedTemporaryFile(suffix=".txt", delete=True) as temp_file:
-                    temp_file.write(file_response.encode())
-                    temp_file.flush()
-                    loader = TextLoader(file_path=temp_file.name)
-                    return loader.load()
-            else:
-                raise ValueError("file_response must not be None.")
-
-        if type == "PDF":
-            if url is None:
-                raise ValueError("URL must not be None for PDF type.")
-            loader = CustomPDFPlumberLoader(
-                file_path=url, from_page=from_page, to_page=to_page
-            )
-            return loader.load()
-
-        if type == "URL":
-            if url is None:
-                raise ValueError("URL must not be None for URL type.")
-            url_list = url.split(",")
-            loader = WebBaseLoader(url_list)
-            return loader.load()
-
-        if type == "YOUTUBE":
-            if url is None:
-                raise ValueError("URL must not be None for YOUTUBE type.")
-            video_id = url.split("youtube.com/watch?v=")[-1]
-            loader = YoutubeLoader(video_id=video_id)
-            return loader.load()
-
-        if type == "MARKDOWN":
-            if url is None:
-                raise ValueError("URL must not be None for MARKDOWN type.")
-            file_response = requests.get(url).text
-
-            if file_response:
-                with NamedTemporaryFile(suffix=".md", delete=True) as temp_file:
-                    temp_file.write(file_response.encode())
-                    temp_file.flush()
-                    loader = UnstructuredMarkdownLoader(file_path=temp_file.name)
-                    return loader.load()
-            else:
-                raise ValueError("file_response must not be None.")
-
         if type == "GITHUB_REPOSITORY":
             parsed_url = urlparse(url)
             path_parts = parsed_url.path.split("/")  # type: ignore
@@ -145,6 +93,54 @@ def load_documents(type, metadata, url, content, from_page, to_page):
                     branch=metadata["branch"],  # type: ignore
                 )
                 return loader.load_and_split()
+
+        elif type == "MARKDOWN":
+            if url is None:
+                raise ValueError("URL must not be None for MARKDOWN type.")
+            if not (file_response := requests.get(url).text):
+                raise ValueError("file_response must not be None.")
+
+            with NamedTemporaryFile(suffix=".md", delete=True) as temp_file:
+                temp_file.write(file_response.encode())
+                temp_file.flush()
+                loader = UnstructuredMarkdownLoader(file_path=temp_file.name)
+                return loader.load()
+        elif type == "PDF":
+            if url is None:
+                raise ValueError("URL must not be None for PDF type.")
+            loader = CustomPDFPlumberLoader(
+                file_path=url, from_page=from_page, to_page=to_page
+            )
+            return loader.load()
+
+        elif type == "TXT":
+            file_response = content
+            if file_response is None:
+                if url is None:
+                    raise ValueError("URL must not be None when content is None.")
+                file_response = requests.get(url).text
+
+            if file_response is None:
+                raise ValueError("file_response must not be None.")
+
+            with NamedTemporaryFile(suffix=".txt", delete=True) as temp_file:
+                temp_file.write(file_response.encode())
+                temp_file.flush()
+                loader = TextLoader(file_path=temp_file.name)
+                return loader.load()
+        elif type == "URL":
+            if url is None:
+                raise ValueError("URL must not be None for URL type.")
+            url_list = url.split(",")
+            loader = WebBaseLoader(url_list)
+            return loader.load()
+
+        elif type == "YOUTUBE":
+            if url is None:
+                raise ValueError("URL must not be None for YOUTUBE type.")
+            video_id = url.split("youtube.com/watch?v=")[-1]
+            loader = YoutubeLoader(video_id=video_id)
+            return loader.load()
 
         return []
 
@@ -183,8 +179,9 @@ def upsert_document(
         logger.info(
             f"Upserting document for document_id: {document_id} of type: {type}"
         )
-        documents = load_documents(type, metadata, url, content, from_page, to_page)
-        if documents:
+        if documents := load_documents(
+            type, metadata, url, content, from_page, to_page
+        ):
             embed_documents(documents, document_id, text_splitter)
         logger.info(f"Upsert for document_id: {document_id} completed.")
     except Exception as e:

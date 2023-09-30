@@ -47,8 +47,7 @@ class TextSplitters:
         text_splitter = CharacterTextSplitter(
             chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
         )
-        docs = text_splitter.split_documents(self.documents)
-        return docs
+        return text_splitter.split_documents(self.documents)
 
     def recursive_splitter(self) -> list[Document]:
         """
@@ -81,8 +80,7 @@ class TextSplitters:
             chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
         )
         texts = text_splitter.split_text(self.documents)
-        docs = [Document(page_content=text) for text in texts]
-        return docs
+        return [Document(page_content=text) for text in texts]
 
     def spacy_splitter(self) -> list[Document]:
         """
@@ -91,8 +89,7 @@ class TextSplitters:
 
         text_splitter = SpacyTextSplitter(chunk_size=self.chunk_size)
         texts = text_splitter.split_text(self.documents)
-        docs = [Document(page_content=text) for text in texts]
-        return docs
+        return [Document(page_content=text) for text in texts]
 
     def nltk_splitter(self) -> list[Document]:
         """
@@ -101,8 +98,7 @@ class TextSplitters:
 
         text_splitter = NLTKTextSplitter(chunk_size=self.chunk_size)
         texts = text_splitter.split_text(self.documents)
-        docs = [Document(page_content=text) for text in texts]
-        return docs
+        return [Document(page_content=text) for text in texts]
 
     def huggingface_splitter(self) -> list[Document]:
         """
@@ -122,5 +118,4 @@ class TextSplitters:
             tokenizer, chunk_size=self.chunk_size, chunk_overlap=self.chunk_overlap
         )
         texts = text_splitter.split_text(self.documents)
-        docs = [Document(page_content=text) for text in texts]
-        return docs
+        return [Document(page_content=text) for text in texts]

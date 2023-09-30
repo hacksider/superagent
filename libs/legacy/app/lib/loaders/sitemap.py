@@ -24,9 +24,7 @@ class SitemapLoader:
         response.raise_for_status()  # Raise exception for HTTP errors
         soup = BeautifulSoup(response.content, "html.parser")
         raw_text = soup.get_text(separator=" ").strip()
-        cleaned_text = re.sub(r"\s+", " ", raw_text)
-
-        return cleaned_text
+        return re.sub(r"\s+", " ", raw_text)
 
     def matches_any_pattern(self, url):
         """Check if the URL matches any of the given patterns."""

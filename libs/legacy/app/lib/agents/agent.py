@@ -20,15 +20,13 @@ class DefaultAgent(AgentStrategy):
         llm = self.agent_base._get_llm()
         memory = self.agent_base._get_memory(session)
         prompt = self.agent_base._get_prompt()
-        agent = LLMChain(
+        return LLMChain(
             llm=llm,
             memory=memory,
             verbose=True,
             prompt=prompt,
             output_key="output",
         )
-
-        return agent
 
 
 class OpenAIAgent(AgentStrategy):
@@ -40,7 +38,7 @@ class OpenAIAgent(AgentStrategy):
         tools = self.agent_base._get_tools()
         memory = self.agent_base._get_memory(session)
         prompt = self.agent_base._get_prompt()
-        agent = initialize_agent(
+        return initialize_agent(
             tools=tools,
             llm=llm,
             agent=AgentType.OPENAI_FUNCTIONS,
@@ -57,8 +55,6 @@ class OpenAIAgent(AgentStrategy):
             memory=memory,
             return_intermediate_steps=True,
         )
-
-        return agent
 
 
 class ReactAgent(AgentStrategy):
@@ -79,12 +75,10 @@ class ReactAgent(AgentStrategy):
             stop=["\nObservation:"],
             allowed_tools=tool_names,
         )
-        agent = AgentExecutor.from_agent_and_tools(
+        return AgentExecutor.from_agent_and_tools(
             agent=agent_config,
             tools=tools,
             verbose=True,
             memory=memory,
             return_intermediate_steps=True,
         )
-
-        return agent

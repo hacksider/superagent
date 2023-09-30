@@ -10,11 +10,9 @@ class PubMed(BaseTool):
 
     def _run(self, search_query: str) -> str:
         pubmed = PubmedQueryRun(args_schema=self.args_schema)
-        output = pubmed.run(search_query)
-        return output
+        return pubmed.run(search_query)
 
     async def _arun(self, search_query: str) -> str:
         pubmed = PubmedQueryRun(args_schema=self.args_schema)
         loop = asyncio.get_event_loop()
-        output = await loop.run_in_executor(None, pubmed.run, search_query)
-        return output
+        return await loop.run_in_executor(None, pubmed.run, search_query)
