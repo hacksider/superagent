@@ -16,8 +16,7 @@ class Openapi(BaseTool):
         agent = get_openapi_chain(
             spec=openapi_url, headers=json.loads(headers) if headers else None
         )
-        output = agent.run(input)
-        return output
+        return agent.run(input)
 
     async def _arun(self, input: str) -> str:
         openapi_url = self.metadata["openApiUrl"]
@@ -26,5 +25,4 @@ class Openapi(BaseTool):
             spec=openapi_url, headers=json.loads(headers) if headers else None
         )
         loop = asyncio.get_event_loop()
-        output = await loop.run_in_executor(None, agent.run, input)
-        return output
+        return await loop.run_in_executor(None, agent.run, input)

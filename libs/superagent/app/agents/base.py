@@ -63,8 +63,7 @@ class AgentBase:
             )
             tools.append(tool)
         for agent_tool in agent_tools:
-            tool_info = TOOL_TYPE_MAPPING.get(agent_tool.tool.type)
-            if tool_info:
+            if tool_info := TOOL_TYPE_MAPPING.get(agent_tool.tool.type):
                 tool = create_tool(
                     tool_class=tool_info["class"],
                     name=slugify(agent_tool.tool.name),

@@ -98,8 +98,7 @@ class DataLoader:
             return loader.load_and_split()
 
     def load_markdown(self):
-        file_response = requests.get(self.datasource.url).text
-        if file_response:
+        if file_response := requests.get(self.datasource.url).text:
             with NamedTemporaryFile(suffix=".md", delete=True) as temp_file:
                 temp_file.write(file_response.encode())
                 temp_file.flush()

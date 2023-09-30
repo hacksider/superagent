@@ -24,9 +24,7 @@ def signJWT(user_id: str) -> Dict[str, str]:
         "exp": EXPIRES,
         "userId": user_id,
     }
-    token = jwt.encode(payload, jwtSecret, algorithm="HS256")
-
-    return token
+    return jwt.encode(payload, jwtSecret, algorithm="HS256")
 
 
 def decodeJWT(token: str) -> dict:
@@ -59,47 +57,40 @@ class JWTBearer(HTTPBearer):
             JWTBearer, self
         ).__call__(request)
 
-        if credentials:
-            if not credentials.scheme == "Bearer":
-                raise HTTPException(
-                    status_code=403, detail="Invalid token or expired token."
-                )
+        if not credentials:
+            raise HTTPException(status_code=403, detail="Invalid authorization code.")
+        if credentials.scheme != "Bearer":
+            raise HTTPException(
+                status_code=403, detail="Invalid token or expired token."
+            )
 
-            if credentials.credentials.startswith("oauth_"):
-                accessToken = credentials.credentials.split("oauth_")[-1]
-                oauth_data = prisma.user.find_first(where={"accessToken": accessToken})
-                self.validateOAuthData(oauth_data)
-                return dict({"userId": oauth_data.id})
-            else:
-                if not self.verify_jwt(credentials.credentials):
-                    tokens_data = prisma.apitoken.find_first(
-                        where={"token": credentials.credentials}
-                    )
-
-                    if not tokens_data:
-                        raise HTTPException(
-                            status_code=403, detail="Invalid token or expired token."
-                        )
-
+        if credentials.credentials.startswith("oauth_"):
+            accessToken = credentials.credentials.split("oauth_")[-1]
+            oauth_data = prisma.user.find_first(where={"accessToken": accessToken})
+            self.validateOAuthData(oauth_data)
+            return dict({"userId": oauth_data.id})
+        else:
+            if not self.verify_jwt(credentials.credentials):
+                if tokens_data := prisma.apitoken.find_first(
+                    where={"token": credentials.credentials}
+                ):
                     return json.loads(tokens_data.json())
 
-            return decodeJWT(credentials.credentials)
+                else:
+                    raise HTTPException(
+                        status_code=403, detail="Invalid token or expired token."
+                    )
 
-        else:
-            raise HTTPException(status_code=403, detail="Invalid authorization code.")
+        return decodeJWT(credentials.credentials)
 
     def verify_jwt(self, jwtToken: str) -> bool:
-        isTokenValid: bool = False
         try:
             payload = decodeJWT(jwtToken)
 
         except Exception:
             payload = None
 
-        if payload:
-            isTokenValid = True
-
-        return isTokenValid
+        return bool(payload)
 
     def validateOAuthData(self, oauth_data) -> bool:
         if oauth_data.provider == "google":
@@ -114,19 +105,14 @@ class JWTBearer(HTTPBearer):
         uri = "https://api.github.com/user"
         headers = {"Authorization": f"token {accessToken}"}
         res = req.get(uri, headers=headers)
-        if res.status_code == 200:
-            return True
-        else:
-            return False
+        return res.status_code == 200
 
     def verify_google_token(self, accessToken: str) -> bool:
         try:
             id_info = id_token.verify_oauth2_token(
                 accessToken, requests.Request(), config("GOOGLE_CLIENT_ID")
             )
-            if id_info["aud"] != config("GOOGLE_CLIENT_ID"):
-                return False
-            return True
+            return id_info["aud"] == config("GOOGLE_CLIENT_ID")
         except ValueError:
             return False
 
@@ -136,9 +122,6 @@ class JWTBearer(HTTPBearer):
                 exclude_managed_identity_credential=False
             )
             token = credentials.get_token("https://management.azure.com/.default")
-            if token.token == accessToken:
-                return True
-            else:
-                return False
+            return token.token == accessToken
         except Exception:
             return False

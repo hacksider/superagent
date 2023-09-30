@@ -19,13 +19,12 @@ router = APIRouter()
 @router.post("/auth/sign-in", response_model=SignInOutput)
 async def sign_in(signIn: SignIn):
     try:
-        user = prisma.user.find_first(
+        if user := prisma.user.find_first(
             where={
                 "email": signIn.email,
             },
             include={"profile": True},
-        )
-        if user:
+        ):
             validated = validatePassword(signIn.password, user.password)
             del user.password
 
@@ -34,16 +33,12 @@ async def sign_in(signIn: SignIn):
                 return {"success": True, "data": SignInOut(token=token, user=user)}
 
             logger.warning("Invalid password")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid credentials",
-            )
         else:
             logger.warning("User not found")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid credentials",
-            )
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+        )
     except Exception as e:
         logger.error("Couldn't find user by email", exc_info=e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -96,16 +91,15 @@ async def oauth_handler(body: OAuth):
     )
     if user:
         return {"success": True, "data": user}
-    else:
-        user = prisma.user.create(
-            {
-                "email": body.email,
-                "provider": body.provider,
-                "name": body.name,
-                "accessToken": body.access_token,
-            }
-        )
-        prisma.profile.create({"userId": user.id})
+    user = prisma.user.create(
+        {
+            "email": body.email,
+            "provider": body.provider,
+            "name": body.name,
+            "accessToken": body.access_token,
+        }
+    )
+    prisma.profile.create({"userId": user.id})
 
-        if user:
-            return {"success": True, "data": user}
+    if user:
+        return {"success": True, "data": user}

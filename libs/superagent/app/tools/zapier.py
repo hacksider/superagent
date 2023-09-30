@@ -22,8 +22,7 @@ class ZapierNLA(BaseTool):
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
         )
-        output = agent.run(input)
-        return output
+        return agent.run(input)
 
     async def _arun(self, input: str) -> str:
         zapier_nla_api_key = self.metadata["zapierNlaApiKey"]
@@ -35,5 +34,4 @@ class ZapierNLA(BaseTool):
             agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
         )
-        output = await agent.arun(input)
-        return output
+        return await agent.arun(input)

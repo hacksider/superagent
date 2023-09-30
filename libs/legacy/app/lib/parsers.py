@@ -91,16 +91,15 @@ class CustomPDFPlumberParser(BaseBlobParser):
             if self.to_page is None:
                 # by default, starts from 1 and processes the whole document
                 doc = pdfplumber.open(file_path)
+            elif self.to_page > 0:
+                """Parse till the maximum page number provided"""
+                doc = pdfplumber.open(
+                    file_path, pages=list(range(self.from_page, self.to_page))
+                )
             else:
-                if self.to_page > 0:
-                    """Parse till the maximum page number provided"""
-                    doc = pdfplumber.open(
-                        file_path, pages=list(range(self.from_page, self.to_page))
-                    )
-                else:
-                    raise ValueError(
-                        "Value of to_page should be greater than equal to 1."
-                    )
+                raise ValueError(
+                    "Value of to_page should be greater than equal to 1."
+                )
 
             yield from [
                 Document(

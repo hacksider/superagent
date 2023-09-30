@@ -119,9 +119,9 @@ async def read_library_agents(token=Depends(JWTBearer())):
 )
 async def read_agent(agentId: str, token=Depends(JWTBearer())):
     """Agent detail endpoint"""
-    agent = prisma.agent.find_unique(where={"id": agentId}, include={"prompt": True})
-
-    if agent:
+    if agent := prisma.agent.find_unique(
+        where={"id": agentId}, include={"prompt": True}
+    ):
         return {"success": True, "data": agent}
 
     logger.error(f"Agent with id: {agentId} not found")

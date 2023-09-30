@@ -19,8 +19,7 @@ def handle_exception(e):
 
 
 def generate_jwt(data: dict):
-    token = jwt.encode({**data}, config("JWT_SECRET"), algorithm="HS256")
-    return token
+    return jwt.encode({**data}, config("JWT_SECRET"), algorithm="HS256")
 
 
 def decode_jwt(token: str):
